@@ -63,6 +63,7 @@
     .badge.acquired { background: #14532d; color: var(--ok); }
     .badge.not-acquired { background: #334155; color: var(--text-dim); }
     .badge.full { background: #14532d; color: var(--ok); }
+    .badge.totsu { background: #713f12; color: var(--warn); }
     .badge.partial { background: #713f12; color: var(--warn); }
     .badge.none { background: #334155; color: var(--text-dim); }
     button.badge { border: none; cursor: pointer; font-family: inherit; }
@@ -261,6 +262,7 @@
           <div class="card-head">
             <span class="card-name">${escapeHtml(c.name)}</span>
             <button type="button" class="badge ${c.acquired ? "acquired" : "not-acquired"}" data-act="acquired" data-id="${escapeHtml(c.id)}">${c.acquired ? "獲得済み" : "未獲得"}</button>
+            ${c.totsu != null ? `<span class="badge totsu">言塊突破 ${c.totsu}凸</span>` : ""}
             ${stBadge}
           </div>
           <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}</div>
