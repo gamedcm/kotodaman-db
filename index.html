@@ -89,6 +89,8 @@
       font-size: 10px; font-weight: bold; color: #0f172a;
       border-radius: 4px; padding: 1px 4px; margin-right: 4px;
     }
+    .ab-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 2px; border-radius: 3px; }
+    .attr-icon { width: 15px; height: 15px; vertical-align: -3px; margin-right: 2px; }
     .trait .trait-icon {
       width: 18px; height: 18px; vertical-align: -4px;
       margin-right: 4px; border-radius: 3px; object-fit: contain;
@@ -180,8 +182,23 @@
       return null;
     }
 
-    function traitType(name) {
-      if (name.includes("バリア貫通")) return ["貫通", "#7dd3fc"];
+    function abilityIcon(name) {
+      if (name.includes("スーパーシールドブレイカー")) return "icons/ab_super_shield_breaker.png";
+      if (name.includes("シールド＆ウォールブレイカー")) return "icons/ab_shield_wall_breaker.png";
+      if (name.includes("スーパースマッシュブレイカー")) return "icons/ab_super_smash_breaker.png";
+      if (name.includes("スマッシュブレイカー")) return "icons/ab_smash_breaker.png";
+      if (name.includes("スーパーヒールブレイカー")) return "icons/ab_super_heal_breaker.png";
+      if (name.includes("フリーズブレイカー")) return "icons/ab_freeze_breaker.png";
+      if (name.includes("バルーンガード")) return "icons/ab_balloon_guard.png";
+      if (name.includes("トゲ＆ビリビリガード")) return "icons/ab_toge_biribiri_guard.png";
+      if (name.includes("トゲ＆チェンジガード")) return "icons/ab_toge_change_guard.png";
+      if (name.includes("地雷ガード")) return "icons/ab_jirai_guard.png";
+      return null;
+    }
+
+    const ATTR_ICON = { "火": "fire", "水": "water", "木": "wood", "光": "light", "闇": "dark", "冥": "mei", "天": "ten" };
+
+    function traitType(name) {      if (name.includes("バリア貫通")) return ["貫通", "#7dd3fc"];
       if (name.includes("文字変換")) return ["文字", "#f9a8d4"];
       if (name.includes("ガード")) return ["ガード", "#86efac"];
       if (name.includes("基礎値")) return ["基礎値", "#fcd34d"];
@@ -198,6 +215,14 @@
       if (u === 0) return "none";
       if (u === c.traits.length) return "full";
       return "partial";
+    }
+
+    function compHtml(v) {
+      const arr = Array.isArray(v) ? v : (v ? [v] : []);
+      return arr.map(name => {
+        const icon = abilityIcon(name);
+        return (icon ? `<img class="ab-icon" src="${icon}" alt="">` : "") + escapeHtml(name);
+      }).join(" ／ ");
     }
 
     function render() {
@@ -256,7 +281,7 @@
         const flat = v => Array.isArray(v) ? v.join(" ／ ") : (v || "");
         const abRows = [];
         if (ab.leader) abRows.push(`<div><span class="ab-label">リーダーとくせい</span>${escapeHtml(flat(ab.leader))}</div>`);
-        if (flat(ab.trait1) || flat(ab.trait2)) abRows.push(`<div><span class="ab-label">とくせい</span>${[flat(ab.trait1), flat(ab.trait2)].filter(Boolean).map(escapeHtml).join(" ／ ")}</div>`);
+        if (flat(ab.trait1) || flat(ab.trait2)) abRows.push(`<div><span class="ab-label">とくせい</span>${[compHtml(ab.trait1), compHtml(ab.trait2)].filter(Boolean).join(" ／ ")}</div>`);
         if (ab.waza) abRows.push(`<div><span class="ab-label">わざ</span>${escapeHtml(flat(ab.waza))}</div>`);
         if (ab.sugowaza) abRows.push(`<div><span class="ab-label">すごわざ</span>${escapeHtml(flat(ab.sugowaza))}</div>`);
         if (ab.kotowaza) abRows.push(`<div><span class="ab-label">コトわざ</span>${escapeHtml(flat(ab.kotowaza))}</div>`);
@@ -268,7 +293,7 @@
             <button type="button" class="badge totsu" data-act="totsu" data-id="${escapeHtml(c.id)}" title="クリックで言塊突破の凸数を変更（4凸の次は0に戻る）">言塊突破 <span class="stars">${"★".repeat(c.totsu || 0)}${"☆".repeat(4 - (c.totsu || 0))}</span></button>
             ${stBadge}
           </div>
-          <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}${c.attribute ? " / " + escapeHtml(c.attribute) + "属性" : ""}${c.tribe ? "・" + escapeHtml(c.tribe) + "種族" : ""}</div>
+          <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}${c.attribute ? " / " + (ATTR_ICON[c.attribute] ? `<img class="attr-icon" src="icons/ref/attr_${ATTR_ICON[c.attribute]}.png" alt="">` : "") + escapeHtml(c.attribute) + "属性" : ""}${c.tribe ? "・" + escapeHtml(c.tribe) + "種族" : ""}</div>
           ${abilities}
           ${traits ? `<div class="traits"><span class="traits-label">祝福とくせい</span>${traits}</div>` : ""}
           ${c.notes ? `<div class="notes">${escapeHtml(c.notes)}</div>` : ""}
