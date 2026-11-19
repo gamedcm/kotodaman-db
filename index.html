@@ -64,6 +64,7 @@
     .badge.not-acquired { background: #334155; color: var(--text-dim); }
     .badge.full { background: #14532d; color: var(--ok); }
     .badge.totsu { background: #713f12; color: var(--warn); }
+    .badge.totsu .stars { color: #fbbf24; letter-spacing: 2px; }
     .badge.partial { background: #713f12; color: var(--warn); }
     .badge.none { background: #334155; color: var(--text-dim); }
     button.badge { border: none; cursor: pointer; font-family: inherit; }
@@ -134,7 +135,7 @@
 
   <main id="list"></main>
 
-  <footer>個人用の管理DBです。バッジと祝福とくせいのチップはクリックで切り替えでき、状態はこのブラウザに保存されます。正本への反映は「状態をJSONで書き出す」からダウンロードしたファイルをみみに渡してください。</footer>
+  <footer>個人用の管理DBです。バッジと祝福とくせいのチップはクリックで切り替えでき、言塊突破の星はクリックで増えていきます（4凸の次は0に戻る）。状態はこのブラウザに保存されます。正本への反映は「状態をJSONで書き出す」からダウンロードしたファイルをみみに渡してください。</footer>
 
   <script>
     let DATA = [];
@@ -145,10 +146,11 @@
       catch (e) { return {}; }
     }
     function saveState() {
-      const st = { acquired: {}, traits: {} };
+      const st = { acquired: {}, traits: {}, totsu: {} };
       DATA.forEach(c => {
         st.acquired[c.id] = !!c.acquired;
         st.traits[c.id] = (c.traits || []).map(t => !!t.unlocked);
+        st.totsu[c.id] = (c.totsu == null ? null : c.totsu);
       });
       localStorage.setItem(LS_KEY, JSON.stringify(st));
     }
@@ -156,6 +158,7 @@
       const st = loadState();
       DATA.forEach(c => {
         if (st.acquired && c.id in st.acquired) c.acquired = st.acquired[c.id];
+        if (st.totsu && c.id in st.totsu) c.totsu = st.totsu[c.id];
         const arr = st.traits && st.traits[c.id];
         if (Array.isArray(arr)) {
           (c.traits || []).forEach((t, i) => { if (i < arr.length) t.unlocked = arr[i]; });
@@ -262,7 +265,7 @@
           <div class="card-head">
             <span class="card-name">${escapeHtml(c.name)}</span>
             <button type="button" class="badge ${c.acquired ? "acquired" : "not-acquired"}" data-act="acquired" data-id="${escapeHtml(c.id)}">${c.acquired ? "獲得済み" : "未獲得"}</button>
-            ${c.totsu != null ? `<span class="badge totsu">言塊突破 ${c.totsu}凸</span>` : ""}
+            <button type="button" class="badge totsu" data-act="totsu" data-id="${escapeHtml(c.id)}" title="クリックで言塊突破の凸数を変更（4凸の次は0に戻る）">言塊突破 <span class="stars">${"★".repeat(c.totsu || 0)}${"☆".repeat(4 - (c.totsu || 0))}</span></button>
             ${stBadge}
           </div>
           <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}</div>
@@ -285,6 +288,8 @@
       if (!c) return;
       if (btn.dataset.act === "acquired") {
         c.acquired = !c.acquired;
+      } else if (btn.dataset.act === "totsu") {
+        c.totsu = ((c.totsu || 0) + 1) % 5;
       } else if (btn.dataset.act === "trait") {
         const t = (c.traits || [])[Number(btn.dataset.idx)];
         if (t) t.unlocked = !t.unlocked;
