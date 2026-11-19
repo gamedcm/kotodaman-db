@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="robots" content="noindex,nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="コトダマンの降臨キャラ取得状況・特性解放状況の管理データベース。">
+  <meta name="description" content="コトダマンの降臨キャラ獲得状況・祝福とくせいの習得状況の管理データベース。">
   <meta name="theme-color" content="#0f172a">
   <title>KOTODAMAN DB</title>
   <style>
@@ -79,17 +79,17 @@
   </header>
 
   <div class="controls">
-    <input type="search" id="q" placeholder="キャラ名・特性名で検索">
+    <input type="search" id="q" placeholder="キャラ名・祝福とくせい名で検索">
     <select id="f-acquired">
-      <option value="all">取得状況：すべて</option>
-      <option value="acquired">取得済み</option>
-      <option value="not">未取得</option>
+      <option value="all">獲得状況：すべて</option>
+      <option value="acquired">獲得済み</option>
+      <option value="not">未獲得</option>
     </select>
     <select id="f-traits">
-      <option value="all">特性：すべて</option>
-      <option value="full">全解放</option>
-      <option value="partial">一部解放</option>
-      <option value="none">未解放</option>
+      <option value="all">祝福とくせい：すべて</option>
+      <option value="full">全習得</option>
+      <option value="partial">一部習得</option>
+      <option value="none">未習得</option>
     </select>
     <select id="f-source">
       <option value="all">出典：すべて</option>
@@ -98,7 +98,7 @@
 
   <main id="list"></main>
 
-  <footer>個人用の管理DBです。取得状況・特性解放状況は data.json が正本です。</footer>
+  <footer>個人用の管理DBです。獲得状況・祝福とくせいの習得状況は data.json が正本です。</footer>
 
   <script>
     let DATA = [];
@@ -134,7 +134,7 @@
       const acq = DATA.filter(c => c.acquired).length;
       const full = DATA.filter(c => traitState(c) === "full").length;
       document.getElementById("summary").textContent =
-        `全${total}件 / 取得済み ${acq}件 / 特性全解放 ${full}件（表示 ${rows.length}件）`;
+        `全${total}件 / 獲得済み ${acq}件 / 祝福とくせい全習得 ${full}件（表示 ${rows.length}件）`;
 
       const list = document.getElementById("list");
       if (rows.length === 0) {
@@ -145,17 +145,17 @@
         const st = traitState(c);
         const u = (c.traits || []).filter(t => t.unlocked).length;
         const stBadge = st === "full"
-          ? `<span class="badge full">特性 全解放</span>`
+          ? `<span class="badge full">祝福とくせい 全習得</span>`
           : st === "partial"
-            ? `<span class="badge partial">特性 ${u}/${c.traits.length} 解放</span>`
-            : `<span class="badge none">特性 未解放</span>`;
+            ? `<span class="badge partial">祝福とくせい ${u}/${c.traits.length} 習得</span>`
+            : `<span class="badge none">祝福とくせい 未習得</span>`;
         const traits = (c.traits || []).map(t =>
           `<span class="trait ${t.unlocked ? "unlocked" : "locked"}">${t.unlocked ? "✓ " : ""}${escapeHtml(t.name)}</span>`
         ).join("");
         return `<article class="card">
           <div class="card-head">
             <span class="card-name">${escapeHtml(c.name)}</span>
-            ${c.acquired ? '<span class="badge acquired">取得済み</span>' : '<span class="badge not-acquired">未取得</span>'}
+            ${c.acquired ? '<span class="badge acquired">獲得済み</span>' : '<span class="badge not-acquired">未獲得</span>'}
             ${stBadge}
           </div>
           <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}</div>
