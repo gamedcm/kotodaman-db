@@ -44,6 +44,12 @@
       border: 1px solid var(--card-border); background: var(--card-bg);
       color: var(--text); font-size: 14px;
     }
+    .controls button {
+      padding: 10px 14px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--card-border); background: var(--card-bg);
+      color: var(--text); font-size: 14px;
+    }
+    .controls button:hover { border-color: var(--accent); }
     main { max-width: 960px; margin: 0 auto; display: grid; gap: 12px; }
     .card {
       background: var(--card-bg); border: 1px solid var(--card-border);
@@ -59,15 +65,27 @@
     .badge.full { background: #14532d; color: var(--ok); }
     .badge.partial { background: #713f12; color: var(--warn); }
     .badge.none { background: #334155; color: var(--text-dim); }
+    button.badge { border: none; cursor: pointer; font-family: inherit; }
+    button.badge:hover { outline: 1px solid var(--accent); }
     .meta { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
-    .traits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .traits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; }
+    .traits-label { font-size: 12px; color: var(--accent); margin-right: 2px; }
     .trait {
       font-size: 13px; padding: 4px 10px; border-radius: 8px;
       border: 1px solid var(--card-border);
+      background: transparent; color: var(--ng);
+      cursor: pointer; font-family: inherit;
     }
+    .trait:hover { border-color: var(--accent); }
     .trait.unlocked { color: var(--ok); border-color: #14532d; background: #052e16; }
-    .trait.locked { color: var(--ng); }
+    .trait .ex-tag {
+      font-size: 10px; font-weight: bold; color: var(--warn);
+      border: 1px solid var(--warn); border-radius: 4px;
+      padding: 0 3px; margin-right: 4px;
+    }
     .notes { color: var(--text-dim); font-size: 13px; margin-top: 8px; white-space: pre-wrap; }
+    .abilities { margin-top: 10px; font-size: 13px; display: grid; gap: 3px; }
+    .abilities .ab-label { color: var(--accent); font-size: 12px; margin-right: 8px; }
     .empty { color: var(--text-dim); text-align: center; padding: 32px 0; }
     footer { max-width: 960px; margin: 24px auto 0; color: var(--text-dim); font-size: 12px; }
   </style>
@@ -94,14 +112,40 @@
     <select id="f-source">
       <option value="all">出典：すべて</option>
     </select>
+    <button id="btn-export" type="button">状態をJSONで書き出す</button>
+    <button id="btn-reset" type="button">状態をリセット</button>
   </div>
 
   <main id="list"></main>
 
-  <footer>個人用の管理DBです。獲得状況・祝福とくせいの習得状況は data.json が正本です。</footer>
+  <footer>個人用の管理DBです。バッジと祝福とくせいのチップはクリックで切り替えでき、状態はこのブラウザに保存されます。正本への反映は「状態をJSONで書き出す」からダウンロードしたファイルをみみに渡してください。</footer>
 
   <script>
     let DATA = [];
+    const LS_KEY = "kotodaman-db-state-v1";
+
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }
+      catch (e) { return {}; }
+    }
+    function saveState() {
+      const st = { acquired: {}, traits: {} };
+      DATA.forEach(c => {
+        st.acquired[c.id] = !!c.acquired;
+        st.traits[c.id] = (c.traits || []).map(t => !!t.unlocked);
+      });
+      localStorage.setItem(LS_KEY, JSON.stringify(st));
+    }
+    function applyState() {
+      const st = loadState();
+      DATA.forEach(c => {
+        if (st.acquired && c.id in st.acquired) c.acquired = st.acquired[c.id];
+        const arr = st.traits && st.traits[c.id];
+        if (Array.isArray(arr)) {
+          (c.traits || []).forEach((t, i) => { if (i < arr.length) t.unlocked = arr[i]; });
+        }
+      });
+    }
 
     function traitState(c) {
       if (!c.traits || c.traits.length === 0) return "none";
@@ -123,8 +167,12 @@
         if (ft !== "all" && traitState(c) !== ft) return false;
         if (fs !== "all" && c.source !== fs) return false;
         if (q) {
+          const ab = c.abilities || {};
+          const flat = v => Array.isArray(v) ? v.join(" ") : (v || "");
           const hay = c.name + " " + (c.source || "") + " " +
-            (c.traits || []).map(t => t.name).join(" ");
+            (c.traits || []).map(t => t.name).join(" ") + " " +
+            [flat(ab.leader), flat(ab.trait1), flat(ab.trait2),
+             flat(ab.waza), flat(ab.sugowaza), flat(ab.kotowaza)].join(" ");
           if (!hay.includes(q)) return false;
         }
         return true;
@@ -144,22 +192,34 @@
       list.innerHTML = rows.map(c => {
         const st = traitState(c);
         const u = (c.traits || []).filter(t => t.unlocked).length;
-        const stBadge = st === "full"
-          ? `<span class="badge full">祝福とくせい 全習得</span>`
-          : st === "partial"
-            ? `<span class="badge partial">祝福とくせい ${u}/${c.traits.length} 習得</span>`
-            : `<span class="badge none">祝福とくせい 未習得</span>`;
-        const traits = (c.traits || []).map(t =>
-          `<span class="trait ${t.unlocked ? "unlocked" : "locked"}">${t.unlocked ? "✓ " : ""}${escapeHtml(t.name)}</span>`
+        const stBadge = (c.traits && c.traits.length)
+          ? (st === "full"
+            ? `<span class="badge full">祝福とくせい 全習得</span>`
+            : st === "partial"
+              ? `<span class="badge partial">祝福とくせい ${u}/${c.traits.length} 習得</span>`
+              : `<span class="badge none">祝福とくせい 未習得</span>`)
+          : `<span class="badge none">祝福とくせい なし</span>`;
+        const traits = (c.traits || []).map((t, i) =>
+          `<button type="button" class="trait ${t.unlocked ? "unlocked" : "locked"}" data-act="trait" data-id="${escapeHtml(c.id)}" data-idx="${i}">${t.ex ? '<span class="ex-tag">EX</span>' : ""}${t.unlocked ? "✓ " : ""}${escapeHtml(t.name)}</button>`
         ).join("");
+        const ab = c.abilities || {};
+        const flat = v => Array.isArray(v) ? v.join(" ／ ") : (v || "");
+        const abRows = [];
+        if (ab.leader) abRows.push(`<div><span class="ab-label">リーダーとくせい</span>${escapeHtml(flat(ab.leader))}</div>`);
+        if (flat(ab.trait1) || flat(ab.trait2)) abRows.push(`<div><span class="ab-label">とくせい</span>${[flat(ab.trait1), flat(ab.trait2)].filter(Boolean).map(escapeHtml).join(" ／ ")}</div>`);
+        if (ab.waza) abRows.push(`<div><span class="ab-label">わざ</span>${escapeHtml(flat(ab.waza))}</div>`);
+        if (ab.sugowaza) abRows.push(`<div><span class="ab-label">すごわざ</span>${escapeHtml(flat(ab.sugowaza))}</div>`);
+        if (ab.kotowaza) abRows.push(`<div><span class="ab-label">コトわざ</span>${escapeHtml(flat(ab.kotowaza))}</div>`);
+        const abilities = abRows.length ? `<div class="abilities">${abRows.join("")}</div>` : "";
         return `<article class="card">
           <div class="card-head">
             <span class="card-name">${escapeHtml(c.name)}</span>
-            ${c.acquired ? '<span class="badge acquired">獲得済み</span>' : '<span class="badge not-acquired">未獲得</span>'}
+            <button type="button" class="badge ${c.acquired ? "acquired" : "not-acquired"}" data-act="acquired" data-id="${escapeHtml(c.id)}">${c.acquired ? "獲得済み" : "未獲得"}</button>
             ${stBadge}
           </div>
           <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}</div>
-          <div class="traits">${traits}</div>
+          ${abilities}
+          ${traits ? `<div class="traits"><span class="traits-label">祝福とくせい</span>${traits}</div>` : ""}
           ${c.notes ? `<div class="notes">${escapeHtml(c.notes)}</div>` : ""}
         </article>`;
       }).join("");
@@ -170,10 +230,40 @@
         ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
     }
 
+    document.getElementById("list").addEventListener("click", e => {
+      const btn = e.target.closest("[data-act]");
+      if (!btn) return;
+      const c = DATA.find(x => x.id === btn.dataset.id);
+      if (!c) return;
+      if (btn.dataset.act === "acquired") {
+        c.acquired = !c.acquired;
+      } else if (btn.dataset.act === "trait") {
+        const t = (c.traits || [])[Number(btn.dataset.idx)];
+        if (t) t.unlocked = !t.unlocked;
+      }
+      saveState();
+      render();
+    });
+
+    document.getElementById("btn-export").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "data.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      if (!confirm("このブラウザに保存した状態を消して、data.jsonの初期状態に戻しますか？")) return;
+      localStorage.removeItem(LS_KEY);
+      fetch("data.json").then(r => r.json()).then(data => { DATA = data; render(); });
+    });
+
     fetch("data.json")
       .then(r => r.json())
       .then(data => {
         DATA = data;
+        applyState();
         const sources = [...new Set(DATA.map(c => c.source).filter(Boolean))];
         const sel = document.getElementById("f-source");
         sources.forEach(s => {
