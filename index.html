@@ -83,6 +83,15 @@
       border: 1px solid var(--warn); border-radius: 4px;
       padding: 0 3px; margin-right: 4px;
     }
+    .trait .type-tag {
+      font-size: 10px; font-weight: bold; color: #0f172a;
+      border-radius: 4px; padding: 1px 4px; margin-right: 4px;
+    }
+    .legend { max-width: 960px; margin: 0 auto 12px; font-size: 12px; color: var(--text-dim); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .legend .type-tag {
+      font-size: 10px; font-weight: bold; color: #0f172a;
+      border-radius: 4px; padding: 1px 4px;
+    }
     .notes { color: var(--text-dim); font-size: 13px; margin-top: 8px; white-space: pre-wrap; }
     .abilities { margin-top: 10px; font-size: 13px; display: grid; gap: 3px; }
     .abilities .ab-label { color: var(--accent); font-size: 12px; margin-right: 8px; }
@@ -116,6 +125,8 @@
     <button id="btn-reset" type="button">状態をリセット</button>
   </div>
 
+  <div class="legend" id="legend"></div>
+
   <main id="list"></main>
 
   <footer>個人用の管理DBです。バッジと祝福とくせいのチップはクリックで切り替えでき、状態はこのブラウザに保存されます。正本への反映は「状態をJSONで書き出す」からダウンロードしたファイルをみみに渡してください。</footer>
@@ -145,6 +156,18 @@
           (c.traits || []).forEach((t, i) => { if (i < arr.length) t.unlocked = arr[i]; });
         }
       });
+    }
+
+    function traitType(name) {
+      if (name.includes("バリア貫通")) return ["貫通", "#7dd3fc"];
+      if (name.includes("文字変換")) return ["文字", "#f9a8d4"];
+      if (name.includes("ガード")) return ["ガード", "#86efac"];
+      if (name.includes("基礎値")) return ["基礎値", "#fcd34d"];
+      if (name.includes("弱点ダメージ")) return ["弱点", "#fca5a5"];
+      if (name.includes("発動条件")) return ["条件", "#c4b5fd"];
+      if (name.includes("回復")) return ["回復", "#5eead4"];
+      if (name.includes("ブレイカー")) return ["ブレイカー", "#fdba74"];
+      return ["その他", "#cbd5e1"];
     }
 
     function traitState(c) {
@@ -199,9 +222,10 @@
               ? `<span class="badge partial">祝福とくせい ${u}/${c.traits.length} 習得</span>`
               : `<span class="badge none">祝福とくせい 未習得</span>`)
           : `<span class="badge none">祝福とくせい なし</span>`;
-        const traits = (c.traits || []).map((t, i) =>
-          `<button type="button" class="trait ${t.unlocked ? "unlocked" : "locked"}" data-act="trait" data-id="${escapeHtml(c.id)}" data-idx="${i}">${t.ex ? '<span class="ex-tag">EX</span>' : ""}${t.unlocked ? "✓ " : ""}${escapeHtml(t.name)}</button>`
-        ).join("");
+        const traits = (c.traits || []).map((t, i) => {
+          const [tt, tc] = traitType(t.name);
+          return `<button type="button" class="trait ${t.unlocked ? "unlocked" : "locked"}" data-act="trait" data-id="${escapeHtml(c.id)}" data-idx="${i}"><span class="type-tag" style="background:${tc}">${tt}</span>${t.ex ? '<span class="ex-tag">EX</span>' : ""}${t.unlocked ? "✓ " : ""}${escapeHtml(t.name)}</button>`;
+        }).join("");
         const ab = c.abilities || {};
         const flat = v => Array.isArray(v) ? v.join(" ／ ") : (v || "");
         const abRows = [];
@@ -272,6 +296,12 @@
           sel.appendChild(o);
         });
         render();
+        const cats = [["貫通", "#7dd3fc"], ["文字", "#f9a8d4"], ["ガード", "#86efac"],
+          ["基礎値", "#fcd34d"], ["弱点", "#fca5a5"], ["条件", "#c4b5fd"],
+          ["回復", "#5eead4"], ["ブレイカー", "#fdba74"], ["その他", "#cbd5e1"]];
+        document.getElementById("legend").innerHTML =
+          "祝福とくせいの種類：" + cats.map(([n, col]) =>
+            `<span class="type-tag" style="background:${col}">${n}</span>`).join("");
       })
       .catch(() => {
         document.getElementById("summary").textContent = "data.json の読み込みに失敗しました";
