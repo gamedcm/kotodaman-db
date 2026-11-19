@@ -1,0 +1,27 @@
+[
+  {
+    "id": "sample-1",
+    "name": "サンプル降臨A",
+    "source": "サンプル降臨クエスト",
+    "releaseDate": "2026-11-01",
+    "acquired": true,
+    "traits": [
+      { "name": "サンプル特性1", "unlocked": true },
+      { "name": "サンプル特性2", "unlocked": true },
+      { "name": "サンプル特性3", "unlocked": false }
+    ],
+    "notes": "これは表示確認用のサンプルです"
+  },
+  {
+    "id": "sample-2",
+    "name": "サンプル降臨B",
+    "source": "サンプルコラボ降臨",
+    "releaseDate": "2026-11-10",
+    "acquired": false,
+    "traits": [
+      { "name": "サンプル特性1", "unlocked": false },
+      { "name": "サンプル特性2", "unlocked": false }
+    ],
+    "notes": ""
+  }
+]
