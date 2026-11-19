@@ -224,7 +224,7 @@
       const arr = Array.isArray(v) ? v : (v ? [v] : []);
       return arr.map(name => {
         const icon = abilityIcon(name);
-        return (icon ? `<img class="ab-icon" src="${icon}" alt="">` : "") + escapeHtml(name);
+        return (icon ? `<img class="ab-icon" src="${icon}?v=4" alt="">` : "") + escapeHtml(name);
       }).join(" ／ ");
     }
 
@@ -276,7 +276,7 @@
           const [tt, tc] = traitType(t.name);
           const icon = traitIcon(t.name);
           const head = icon
-            ? `<img class="trait-icon" src="${icon}" alt="${tt}">`
+            ? `<img class="trait-icon" src="${icon}?v=4" alt="${tt}">`
             : `<span class="type-tag" style="background:${tc}">${tt}</span>`;
           return `<button type="button" class="trait ${t.unlocked ? "unlocked" : "locked"}" data-act="trait" data-id="${escapeHtml(c.id)}" data-idx="${i}">${head}${t.ex ? '<span class="ex-tag">EX</span>' : ""}${t.unlocked ? "✓ " : ""}${escapeHtml(t.name)}</button>`;
         }).join("");
@@ -296,7 +296,7 @@
             <button type="button" class="badge totsu" data-act="totsu" data-id="${escapeHtml(c.id)}" title="クリックで言塊突破の凸数を変更（4凸の次は0に戻る）">言塊突破 <span class="stars">${"★".repeat(c.totsu || 0)}${"☆".repeat(4 - (c.totsu || 0))}</span></button>
             ${stBadge}
           </div>
-          <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}${c.attribute ? " / " + (ATTR_ICON[c.attribute] ? `<img class="attr-icon" src="icons/ref/attr_${ATTR_ICON[c.attribute]}.png" alt="">` : "") + escapeHtml(c.attribute) + "属性" : ""}${c.tribe ? "・" + escapeHtml(c.tribe) + "種族" : ""}</div>
+          <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}${c.attribute ? " / " + (ATTR_ICON[c.attribute] ? `<img class="attr-icon" src="icons/ref/attr_${ATTR_ICON[c.attribute]}.png?v=4" alt="">` : "") + escapeHtml(c.attribute) + "属性" : ""}${c.tribe ? "・" + escapeHtml(c.tribe) + "種族" : ""}</div>
           ${abilities}
           ${traits ? `<div class="traits"><span class="traits-label">祝福とくせい</span>${traits}</div>` : ""}
           ${c.notes ? `<div class="notes">${escapeHtml(c.notes)}</div>` : ""}
