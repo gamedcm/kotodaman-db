@@ -268,7 +268,7 @@
             <button type="button" class="badge totsu" data-act="totsu" data-id="${escapeHtml(c.id)}" title="クリックで言塊突破の凸数を変更（4凸の次は0に戻る）">言塊突破 <span class="stars">${"★".repeat(c.totsu || 0)}${"☆".repeat(4 - (c.totsu || 0))}</span></button>
             ${stBadge}
           </div>
-          <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}</div>
+          <div class="meta">${escapeHtml(c.source || "")}${c.releaseDate ? " / " + escapeHtml(c.releaseDate) : ""}${c.attribute ? " / " + escapeHtml(c.attribute) + "属性" : ""}${c.tribe ? "・" + escapeHtml(c.tribe) + "種族" : ""}</div>
           ${abilities}
           ${traits ? `<div class="traits"><span class="traits-label">祝福とくせい</span>${traits}</div>` : ""}
           ${c.notes ? `<div class="notes">${escapeHtml(c.notes)}</div>` : ""}
