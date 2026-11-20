@@ -75,6 +75,7 @@
     }
     .word-letters { font-size: 21px; font-weight: bold; letter-spacing: 2px; }
     .word-letters .placed { color: var(--accent); }
+    .word-letters .missing { color: var(--warn); }
     .word-letters .fixed { color: var(--text); }
     .word-disp { color: var(--text-dim); font-size: 14px; margin-left: 8px; }
     .combo-badge {
@@ -110,7 +111,7 @@
         <button id="hand-clear">手札オールクリア</button>
         <button id="all-clear">全部クリア</button>
       </div>
-      <div class="summary" style="margin-top:8px;">濁点・半濁点・小文字は自動で変換して判定するよ（「き」の札で「ぎ」、 「つ」の札で「っ」が置ける）。</div>
+      <div class="summary" style="margin-top:8px;">濁点・半濁点・小文字は自動で変換して判定するよ（「き」の札で「ぎ」、 「つ」の札で「っ」が置ける）。今の手札で完成しない言葉は、必要な文字つきで下に別枠で出すよ。</div>
     </section>
 
     <div id="palette"></div>
@@ -260,10 +261,12 @@
       }
       const started = performance.now();
       const byLen = {};
+      const almostByLen = {};
       for (let L = 7; L >= 2; L--) {
         const words = dict[L];
         if (!words) continue;
         const found = [];
+        const almostMap = new Map();
         for (const w of words) {
           for (let o = 0; o + L <= 7; o++) {
             let ok = true;
@@ -273,32 +276,42 @@
               if (cell) { if (cell !== w.ch[i]) { ok = false; break; } }
               else need.push({ pos: o + i, ch: w.ch[i], b: w.bch[i] });
             }
-            if (!ok || need.length === 0 || need.length > handCards.length) continue;
-            // 手札の割り当て（基底形が一致する札を使う）
+            if (!ok || need.length === 0 || need.length > 4) continue;
+            // 手札の割り当て（基底形が一致する札を使う）。足りない分は「不足」として集める
             const pool = handCards.slice();
             const assign = [];
-            let fail = false;
+            const missing = [];
             for (const n of need) {
               const j = pool.findIndex(h => h.b === n.b);
-              if (j < 0) { fail = true; break; }
-              assign.push({ pos: n.pos, ch: n.ch, card: pool[j].c });
-              pool.splice(j, 1);
+              if (j < 0) missing.push(n);
+              else { assign.push({ pos: n.pos, ch: n.ch, card: pool[j].c }); pool.splice(j, 1); }
             }
-            if (!fail) found.push({ w, o, assign });
+            if (!missing.length) found.push({ w, o, assign });
+            else {
+              const prev = almostMap.get(w.k);
+              if (!prev || missing.length < prev.missing.length) almostMap.set(w.k, { w, o, assign, missing });
+            }
           }
         }
         if (found.length) {
           found.sort((a, b) => b.w.c - a.w.c);
           byLen[L] = found;
         }
+        if (almostMap.size) {
+          const list = [...almostMap.values()];
+          list.sort((a, b) => a.missing.length - b.missing.length || b.w.c - a.w.c);
+          almostByLen[L] = list;
+        }
       }
       const ms = Math.max(1, Math.round(performance.now() - started));
       const lens = Object.keys(byLen).map(Number).sort((a, b) => b - a);
-      if (!lens.length) {
+      const almostLens = Object.keys(almostByLen).map(Number).sort((a, b) => b - a);
+      if (!lens.length && !almostLens.length) {
         box.innerHTML = '<div class="empty-msg">作れる言葉が見つからなかったよ（辞書に無い言葉は出てこない）</div>';
         return;
       }
       let html = '<div class="summary" style="margin-bottom:10px;">検索 ' + ms + 'ms' + (dictReady ? '' : '（辞書は読み込み途中。短い語はまだ出ないことがあるよ）') + '</div>';
+      if (!lens.length) html += '<div class="summary" style="margin-bottom:10px;">今の手札では完成しないけど、盤面に合う言葉は下にあるよ。</div>';
       for (const L of lens) {
         const list = byLen[L];
         html += '<div class="result-group"><h3>' + L + '文字（' + list.length + '件）</h3>';
@@ -314,6 +327,27 @@
             '<div class="placement">' + guide + '</div></div>';
         });
         if (list.length > 50) html += '<div class="summary">…ほか ' + (list.length - 50) + '件（上位50件まで表示）</div>';
+        html += '</div>';
+      }
+      if (almostLens.length) {
+        html += '<div class="result-group"><h3 style="color:var(--warn);">手札が揃えば作れる言葉（黄色＝不足している文字）</h3>';
+        for (const L of almostLens) {
+          const list = almostByLen[L];
+          html += '<div class="summary" style="margin:8px 0 4px;">' + L + '文字（' + list.length + '件）</div>';
+          list.slice(0, 30).forEach(({ w, o, assign, missing }) => {
+            const placedPos = new Set(assign.map(a => a.pos));
+            const missingPos = new Set(missing.map(a => a.pos));
+            const letters = w.ch.map((c, i) =>
+              '<span class="' + (placedPos.has(o + i) ? 'placed' : missingPos.has(o + i) ? 'missing' : 'fixed') + '">' + c + '</span>').join('');
+            const missGuide = missing.map(a =>
+              (a.pos + 1) + 'マス目に「' + a.ch + '」' + (baseOf(a.ch) !== a.ch ? '（' + baseOf(a.ch) + 'の札）' : '')).join('、');
+            html += '<div class="word-card"><span class="word-letters">' + letters + '</span>' +
+              '<span class="word-disp">' + escapeHtml(w.d) + '</span>' +
+              (w.c > 1 ? '<span class="combo-badge">' + w.c + 'コンボ</span>' : '') +
+              '<div class="placement">不足：' + missGuide + '</div></div>';
+          });
+          if (list.length > 30) html += '<div class="summary">…ほか ' + (list.length - 30) + '件（不足が少ない順に30件まで表示）</div>';
+        }
         html += '</div>';
       }
       box.innerHTML = html;
