@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="コトダマンのドロー順の法則で次のドローを予測・記録するトラッカー。">
+  <meta name="theme-color" content="#0f172a">
+  <title>ドロー順トラッカー | KOTODAMAN DB</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #4ade80;
+      --warn: #facc15;
+      --bad: #f87171;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 16px;
+      background: var(--bg-color); color: var(--text);
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
+    header, main, footer { max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    h1 .sub { color: var(--accent); }
+    .nav { font-size: 13px; margin-bottom: 12px; }
+    .nav a { color: var(--accent); text-decoration: none; margin-right: 14px; }
+    .summary { color: var(--text-dim); font-size: 13px; }
+    section { margin-bottom: 20px; }
+    h2 { font-size: 15px; color: var(--accent); margin: 0 0 8px; }
+    .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    .cell {
+      aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: bold; position: relative;
+      background: var(--card-bg); border: 2px solid var(--card-border);
+      border-radius: 10px; cursor: pointer; user-select: none;
+    }
+    .cell.empty { color: var(--text-dim); font-size: 14px; font-weight: normal; }
+    .cell.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56,189,248,.35); }
+    .cell .dup {
+      position: absolute; right: 3px; bottom: 1px;
+      font-size: 10px; color: var(--text-dim); font-weight: normal;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 46px; }
+    .chip {
+      min-width: 44px; height: 44px; padding: 0 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: bold; position: relative;
+      background: var(--card-bg); border: 2px solid var(--card-border);
+      border-radius: 10px; cursor: pointer; user-select: none;
+    }
+    .chip .dup { position: absolute; right: 3px; bottom: 0; font-size: 10px; color: var(--text-dim); font-weight: normal; }
+    .chip.played { border-color: var(--bad); color: var(--bad); }
+    .chip.resting { border-color: var(--warn); color: var(--warn); }
+    .chip.next { border-color: var(--ok); color: var(--ok); }
+    .chip.plain { cursor: default; }
+    .row-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    button {
+      padding: 10px 14px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--card-border); background: var(--card-bg);
+      color: var(--text); font-size: 14px; font-family: inherit;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary { background: #075985; border-color: var(--accent); font-weight: bold; }
+    button:disabled { opacity: .4; cursor: default; }
+    #palette {
+      display: none; margin: 10px 0 18px; padding: 10px;
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
+    }
+    #palette.open { display: block; }
+    .pal-row { display: flex; gap: 4px; margin-bottom: 4px; flex-wrap: wrap; }
+    .pal-key {
+      flex: 1 1 0; min-width: 30px; padding: 9px 0; text-align: center;
+      font-size: 17px; border-radius: 7px; cursor: pointer;
+      border: 1px solid var(--card-border); background: #0f172a; color: var(--text);
+      user-select: none;
+    }
+    .pal-key:active { background: #075985; }
+    .pal-label { font-size: 11px; color: var(--text-dim); margin: 6px 0 3px; }
+    .banner {
+      border: 1px solid var(--ok); background: #052e16; color: var(--ok);
+      border-radius: 10px; padding: 10px 14px; font-size: 14px; margin-bottom: 10px;
+    }
+    .banner.warn { border-color: var(--warn); background: #422006; color: var(--warn); }
+    .status-line { font-size: 15px; font-weight: bold; margin-bottom: 8px; }
+    .log {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 10px 14px; font-size: 13px; color: var(--text-dim);
+      max-height: 220px; overflow-y: auto; white-space: pre-wrap;
+    }
+    footer { color: var(--text-dim); font-size: 12px; margin-top: 24px; line-height: 1.8; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ドロー順 <span class="sub">トラッカー</span></h1>
+    <div class="nav"><a href="index.html">← キャラDB</a><a href="words.html">ロングワード検索 →</a></div>
+    <div class="summary">ドローの法則（2ターンでデッキ12枚を1周）を使って、次のドローを割り出すよ。記録はこの端末に自動保存される。</div>
+  </header>
+
+  <main>
+    <!-- デッキ登録 -->
+    <section id="deck-section">
+      <h2>デッキ（12枚）の文字</h2>
+      <div class="grid" id="deck-grid"></div>
+      <div id="palette"></div>
+      <div class="row-actions">
+        <button id="deck-clear">デッキ全消し</button>
+        <button id="battle-start" class="primary">バトル開始</button>
+      </div>
+      <div class="summary" style="margin-top:6px;">同じ文字が複数ある時は、そのまま複数入れればOK（右下の小さい数字で区別するよ）。</div>
+    </section>
+
+    <!-- バトル -->
+    <section id="battle-section" class="hidden">
+      <div class="status-line" id="status-line"></div>
+      <div id="banner"></div>
+
+      <h2>手札（タップで「使う」）</h2>
+      <div class="chips" id="hand-chips"></div>
+
+      <h2 style="margin-top:14px;">このターン使った札（タップで手札に戻す）</h2>
+      <div class="chips" id="played-chips"></div>
+
+      <h2 style="margin-top:14px;">まだ出ていない札（タップで「引いた」を記録）</h2>
+      <div class="chips" id="unseen-chips"></div>
+
+      <div id="resting-block" class="hidden">
+        <h2 style="margin-top:14px;">休憩中（奇数ターンに使った札・このターンは来ない）</h2>
+        <div class="chips" id="resting-chips"></div>
+      </div>
+
+      <div class="row-actions">
+        <button id="turn-end" class="primary">ターン終了</button>
+        <button id="undo">↩ 1つ戻す</button>
+        <button id="battle-end">バトル終了</button>
+      </div>
+
+      <h2 style="margin-top:18px;">記録</h2>
+      <div class="log" id="log"></div>
+    </section>
+  </main>
+
+  <footer>
+    <strong>ドローの法則メモ</strong><br>
+    ・デッキ12枚は2ターンで1周する（奇数＋偶数ターンが1セット）<br>
+    ・奇数ターンに使った札は、次の偶数ターンには来ない（休憩）<br>
+    ・偶数ターンのドローは、そのセットでまだ出ていない札の中から来る（未出現が4枚ちょうどなら、その4枚で確定・順番だけランダム）<br>
+    ・セットが変わると全ての札が山に戻る
+  </footer>
+
+  <script>
+    'use strict';
+    const PALETTE = [
+      ['あ行', ['あ','い','う','え','お']],
+      ['か行', ['か','き','く','け','こ']],
+      ['さ行', ['さ','し','す','せ','そ']],
+      ['た行', ['た','ち','つ','て','と']],
+      ['な行', ['な','に','ぬ','ね','の']],
+      ['は行', ['は','ひ','ふ','へ','ほ']],
+      ['ま行', ['ま','み','む','め','も']],
+      ['や行', ['や','ゆ','よ']],
+      ['ら行', ['ら','り','る','れ','ろ']],
+      ['わ行', ['わ','を','ん']],
+      ['濁点・半濁点', ['が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ','だ','ぢ','づ','で','ど','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ','ゔ']],
+      ['小文字', ['ぁ','ぃ','ぅ','ぇ','ぉ','っ','ゃ','ゅ','ょ','ゎ']],
+    ];
+    const LS_KEY = 'koto-draw-state-v1';
+    const $ = id => document.getElementById(id);
+
+    let state = load() || { deck: Array(12).fill(null), battle: null };
+    let selDeck = null;
+    let undoStack = [];
+
+    function load() {
+      try { const s = JSON.parse(localStorage.getItem(LS_KEY)); return s && Array.isArray(s.deck) ? s : null; }
+      catch (e) { return null; }
+    }
+    function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+    function snapshot() {
+      undoStack.push(JSON.stringify(state));
+      if (undoStack.length > 40) undoStack.shift();
+    }
+    // 同じ文字の何枚目か（1始まり、同文字が1枚だけなら0＝表示なし）
+    function dupIndex(id) {
+      const L = state.deck[id];
+      const same = state.deck.map((c, i) => c === L ? i : -1).filter(i => i >= 0);
+      if (same.length <= 1) return 0;
+      return same.indexOf(id) + 1;
+    }
+    function chip(id, cls, onclick) {
+      const d = document.createElement('div');
+      d.className = 'chip' + (cls ? ' ' + cls : '');
+      d.textContent = state.deck[id];
+      const di = dupIndex(id);
+      if (di) { const s = document.createElement('span'); s.className = 'dup'; s.textContent = di; d.appendChild(s); }
+      if (onclick) d.onclick = onclick;
+      return d;
+    }
+
+    // ===== デッキ描画 =====
+    function renderDeck() {
+      const g = $('deck-grid'); g.innerHTML = '';
+      state.deck.forEach((c, i) => {
+        const d = document.createElement('div');
+        d.className = 'cell' + (c ? '' : ' empty') + (selDeck === i ? ' selected' : '');
+        d.textContent = c || (i + 1);
+        const di = c ? dupIndex(i) : 0;
+        if (di) { const s = document.createElement('span'); s.className = 'dup'; s.textContent = di; d.appendChild(s); }
+        d.onclick = () => { selDeck = i; openPalette(); renderDeck(); };
+        g.appendChild(d);
+      });
+      $('battle-start').disabled = !(state.deck.every(Boolean) && !state.battle);
+      $('battle-start').textContent = state.battle ? 'バトル中…' : 'バトル開始';
+    }
+
+    // ===== パレット =====
+    function openPalette() {
+      const p = $('palette');
+      if (!p.dataset.built) {
+        p.dataset.built = '1';
+        PALETTE.forEach(([label, chars]) => {
+          const lab = document.createElement('div');
+          lab.className = 'pal-label'; lab.textContent = label;
+          p.appendChild(lab);
+          const row = document.createElement('div');
+          row.className = 'pal-row';
+          chars.forEach(c => {
+            const k = document.createElement('div');
+            k.className = 'pal-key'; k.textContent = c;
+            k.onclick = () => pickDeck(c);
+            row.appendChild(k);
+          });
+          p.appendChild(row);
+        });
+        const row = document.createElement('div');
+        row.className = 'pal-row'; row.style.marginTop = '8px';
+        const del = document.createElement('button');
+        del.textContent = 'このマスを空にする';
+        del.onclick = () => pickDeck(null);
+        const close = document.createElement('button');
+        close.textContent = '閉じる';
+        close.onclick = () => { p.classList.remove('open'); selDeck = null; renderDeck(); };
+        row.appendChild(del); row.appendChild(close);
+        p.appendChild(row);
+      }
+      p.classList.add('open');
+    }
+    function pickDeck(c) {
+      if (selDeck === null) return;
+      snapshot();
+      state.deck[selDeck] = c;
+      let next = -1;
+      for (let i = selDeck + 1; i < 12; i++) if (!state.deck[i]) { next = i; break; }
+      if (c && next >= 0) selDeck = next;
+      else if (c) { $('palette').classList.remove('open'); selDeck = null; }
+      save(); renderDeck();
+    }
+    $('deck-clear').onclick = () => { snapshot(); state.deck = Array(12).fill(null); save(); renderDeck(); };
+
+    // ===== バトル =====
+    $('battle-start').onclick = () => {
+      snapshot();
+      state.battle = {
+        set: 1, turnInSet: 1, turn: 1,
+        hand: [], appeared: [], played: [], playedOdd: [], drawn: [],
+        log: ['バトル開始（セット1・ターン1）'],
+      };
+      save(); render();
+    };
+    $('battle-end').onclick = () => {
+      snapshot();
+      state.battle = null;
+      save(); render();
+    };
+    $('undo').onclick = () => {
+      const prev = undoStack.pop();
+      if (prev) { state = JSON.parse(prev); save(); render(); }
+    };
+    $('turn-end').onclick = () => {
+      const b = state.battle; if (!b) return;
+      snapshot();
+      const used = b.played.map(id => state.deck[id]).join(' ') || 'なし';
+      const drew = b.drawn.map(id => state.deck[id]).join(' ') || 'なし';
+      b.log.push('ターン' + b.turn + '：使用［' + used + '］ ドロー［' + drew + '］');
+      if (b.turnInSet === 2) {
+        b.playedOdd = b.played.slice();
+        b.played = []; b.drawn = [];
+        b.turnInSet = 2; b.turn++;
+        b.log.push('→ ターン' + b.turn + '（偶数）：ドローは未出現の中から（休憩中の札は来ない）');
+      } else {
+        b.set++; b.turnInSet = 1; b.turn++;
+        b.appeared = b.hand.slice();
+        b.played = []; b.playedOdd = []; b.drawn = [];
+        b.log.push('→ セット' + b.set + '開始（ターン' + b.turn + '）：全札リセット');
+      }
+      save(); render();
+    };
+
+    function renderBattle() {
+      const b = state.battle;
+      $('battle-section').classList.toggle('hidden', !b);
+      if (!b) return;
+      $('status-line').textContent = 'セット' + b.set + ' ／ ターン' + b.turn + '（' + (b.turnInSet === 1 ? '奇数' : '偶数') + '）';
+      const unseen = state.deck.map((c, i) => i).filter(i => !b.appeared.includes(i));
+      // バナー（予測）
+      const banner = $('banner');
+      if (b.turnInSet === 2) {
+        if (unseen.length === 4) {
+          banner.innerHTML = '<div class="banner">偶数ターン：このターンのドローは <strong>' +
+            unseen.map(i => state.deck[i]).join('・') +
+            '</strong> の4枚で確定（順番はランダム）。奇数ターンに使った札は来ないよ。</div>';
+        } else {
+          banner.innerHTML = '<div class="banner">偶数ターン：ドローはまだ出ていない <strong>' +
+            (unseen.length ? unseen.map(i => state.deck[i]).join('・') : '（なし）') +
+            '</strong> の中から来るよ（奇数ターンに使った札は絶対に来ない）。' +
+            (unseen.length > 4 ? '前のターンで置いた枚数が少ない分、候補が4枚より広くなってる。' : '') + '</div>';
+        }
+      } else if (b.set >= 1 && b.turn > 1) {
+        banner.innerHTML = '<div class="banner warn">奇数ターン：まだ出ていない札は <strong>' +
+          (unseen.length ? unseen.map(i => state.deck[i]).join('・') : '（なし）') +
+          '</strong>。この中から次の偶数ターンのドロー組が決まるよ。</div>';
+      } else {
+        banner.innerHTML = '<div class="banner warn">最初の手札4枚を「まだ出ていない札」からタップして記録してね。</div>';
+      }
+      // 手札
+      const hc = $('hand-chips'); hc.innerHTML = '';
+      if (!b.hand.length) hc.innerHTML = '<span class="summary">（なし）</span>';
+      b.hand.forEach(id => hc.appendChild(chip(id, '', () => {
+        snapshot();
+        b.hand = b.hand.filter(x => x !== id);
+        b.played.push(id);
+        save(); render();
+      })));
+      // 使用済み
+      const pc = $('played-chips'); pc.innerHTML = '';
+      if (!b.played.length) pc.innerHTML = '<span class="summary">（なし）</span>';
+      b.played.forEach(id => pc.appendChild(chip(id, 'played', () => {
+        snapshot();
+        b.played = b.played.filter(x => x !== id);
+        b.hand.push(id);
+        save(); render();
+      })));
+      // 未出現
+      const uc = $('unseen-chips'); uc.innerHTML = '';
+      if (!unseen.length) uc.innerHTML = '<span class="summary">（全部出た）</span>';
+      unseen.forEach(id => uc.appendChild(chip(id, 'next', () => {
+        snapshot();
+        b.appeared.push(id);
+        b.hand.push(id);
+        b.drawn.push(id);
+        save(); render();
+      })));
+      // 休憩中
+      const rb = $('resting-block');
+      rb.classList.toggle('hidden', !(b.turnInSet === 2 && b.playedOdd.length));
+      const rc = $('resting-chips'); rc.innerHTML = '';
+      b.playedOdd.forEach(id => rc.appendChild(chip(id, 'resting plain')));
+      // ログ
+      $('log').textContent = b.log.join('\n');
+      $('log').scrollTop = $('log').scrollHeight;
+    }
+
+    function render() { renderDeck(); renderBattle(); }
+    render();
+  </script>
+</body>
+</html>
