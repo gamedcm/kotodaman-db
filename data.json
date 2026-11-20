@@ -3,6 +3,293 @@
     "abilities": {
       "kotowaza": null,
       "leader": null,
+      "sugowaza": "俺がエースだ",
+      "trait1": [
+        "文字変換（福の上昇により追加）",
+        "英種族キラー30%（満福時）"
+      ],
+      "trait2": [
+        "コピーガード",
+        "援護(ブルーロック)",
+        "「ブルーロック」睡眠耐性10%"
+      ],
+      "waza": "Ｕ－２０日本代表エース"
+    },
+    "acquired": false,
+    "attribute": "天",
+    "id": "bluelock2-sendou",
+    "name": "閃堂 秋人",
+    "notes": "コラボ降臨クエスト【超級】。★6で獲得（進化なし）。天属性・英種族。コラボ期間は2026-12-07 15:59まで。能力はコトの木の加護適用後の値（加護で祝福とくせい「冥属性キラー30%」が追加）",
+    "releaseDate": "2026-11-24",
+    "source": "ブルーロックコラボ第2弾(復刻)",
+    "totsu": null,
+    "traits": [
+      {
+        "name": "冥属性キラー30%",
+        "unlocked": false
+      }
+    ],
+    "tribe": "英"
+  },
+  {
+    "abilities": {
+      "kotowaza": null,
+      "leader": null,
+      "sugowaza": "超捕捉守備",
+      "trait1": [
+        "文字変換（福の上昇により追加）",
+        "「あ・ぁ」自身威力50%UP"
+      ],
+      "trait2": [
+        "ヒールブレイカー",
+        "援護(ブルーロック)",
+        "「ブルーロック」睡眠耐性10%"
+      ],
+      "waza": "Ｕ－２０日本代表主将"
+    },
+    "acquired": false,
+    "attribute": "冥",
+    "id": "bluelock2-oliver",
+    "name": "オリヴァ・愛空",
+    "notes": "コラボ降臨クエスト【魔級】。2026-11-25から出現。★6で獲得（進化なし）。冥属性・英種族。コラボ期間は2026-12-07 15:59まで。能力はコトの木の加護適用後の値（加護で祝福とくせい「天属性キラー30%」が追加）",
+    "releaseDate": "2026-11-25",
+    "source": "ブルーロックコラボ第2弾(復刻)",
+    "totsu": null,
+    "traits": [
+      {
+        "name": "コピーガード",
+        "unlocked": false
+      },
+      {
+        "name": "天属性キラー30%",
+        "unlocked": false
+      }
+    ],
+    "tribe": "英"
+  },
+  {
+    "abilities": {
+      "kotowaza": null,
+      "leader": null,
+      "sugowaza": "龍聖・直下蹴弾",
+      "trait1": [
+        "文字変換（福の上昇により追加）"
+      ],
+      "trait2": [
+        "ヒールブレイカー",
+        "援護(ブルーロック)",
+        "「ブルーロック」睡眠耐性10%"
+      ],
+      "waza": "大爆発直下蹴弾"
+    },
+    "acquired": false,
+    "attribute": "天",
+    "id": "bluelock2-shidou",
+    "name": "士道 龍聖",
+    "notes": "コラボクエスト【魔級・破滅級】クリアで獲得。★6（進化なし）。天属性・英種族。破滅級は満福10体以上所持が挑戦条件。コラボ期間は2026-12-07 15:59まで。能力はコトの木の加護適用後の値（加護で祝福とくせい「全属性キラー20%」が追加）",
+    "releaseDate": "2026-11-24",
+    "source": "ブルーロックコラボ第2弾(復刻)",
+    "totsu": null,
+    "traits": [
+      {
+        "name": "バルーンガード",
+        "unlocked": false
+      },
+      {
+        "name": "全属性キラー20%",
+        "unlocked": false
+      }
+    ],
+    "tribe": "英"
+  },
+  {
+    "abilities": {
+      "kotowaza": null,
+      "leader": null,
+      "sugowaza": "『醜く壊す』サッカー",
+      "trait1": [
+        "文字変換「り」",
+        "英種族キラー30%（満福時）"
+      ],
+      "trait2": [
+        "コピーガード",
+        "援護(ブルーロック)",
+        "「ブルーロック」睡眠耐性10%"
+      ],
+      "waza": "『重心』回転破壊"
+    },
+    "acquired": false,
+    "attribute": "冥",
+    "id": "bluelock2-rin-hakai",
+    "name": "糸師 凛(破壊者)",
+    "notes": "コラボクエスト【魔級・破滅級】クリアで獲得。★6（進化なし）。冥属性・英種族。破滅級は満福10体以上所持が挑戦条件。コラボ期間は2026-12-07 15:59まで。能力はコトの木の加護適用後の値（加護で祝福とくせい「全属性キラー20%」が追加）",
+    "releaseDate": "2026-11-24",
+    "source": "ブルーロックコラボ第2弾(復刻)",
+    "totsu": null,
+    "traits": [
+      {
+        "name": "地雷ガード",
+        "unlocked": false
+      },
+      {
+        "name": "全属性キラー20%",
+        "unlocked": false
+      }
+    ],
+    "tribe": "英"
+  },
+  {
+    "abilities": {
+      "kotowaza": null,
+      "leader": null,
+      "sugowaza": "筋肉の弾丸",
+      "trait1": [
+        "文字変換「あ・ぁ」",
+        "英種族キラー50%（福50以上）"
+      ],
+      "trait2": [
+        "ビリビリガード",
+        "援護(ブルーロック)",
+        "「ブルーロック」睡眠耐性10%"
+      ],
+      "waza": "絶対勝ちたぁい！"
+    },
+    "acquired": false,
+    "attribute": "木",
+    "id": "bluelock1-tokimitsu",
+    "name": "時光 青志",
+    "notes": "コラボ降臨クエスト【中級・上級】。★6で獲得（進化なし）。木属性・英種族。コラボ期間は2026-12-07 15:59まで。能力はコトの木の加護適用後の値（加護で祝福とくせい「冥属性キラー30%」が追加）",
+    "releaseDate": "2026-11-24",
+    "source": "ブルーロックコラボ第1弾(復刻)",
+    "totsu": null,
+    "traits": [
+      {
+        "name": "水属性キラー30%",
+        "unlocked": false
+      },
+      {
+        "name": "冥属性キラー30%",
+        "unlocked": false
+      }
+    ],
+    "tribe": "英"
+  },
+  {
+    "abilities": {
+      "kotowaza": null,
+      "leader": null,
+      "sugowaza": "悪の異分子",
+      "trait1": [
+        "文字変換「し・じ」",
+        "英種族キラー50%（福50以上）"
+      ],
+      "trait2": [
+        "弱体ガード",
+        "援護(ブルーロック)",
+        "「ブルーロック」睡眠耐性10%"
+      ],
+      "waza": "王様"
+    },
+    "acquired": false,
+    "attribute": "水",
+    "id": "bluelock1-barou",
+    "name": "馬狼 照英",
+    "notes": "コラボ降臨クエスト【超級】。★6で獲得（進化なし）。水属性・英種族。コラボ期間は2026-12-07 15:59まで。能力はコトの木の加護適用後の値（加護で祝福とくせい「冥属性キラー30%」が追加）",
+    "releaseDate": "2026-11-24",
+    "source": "ブルーロックコラボ第1弾(復刻)",
+    "totsu": null,
+    "traits": [
+      {
+        "name": "フリーズブレイカー",
+        "unlocked": false
+      },
+      {
+        "name": "冥属性キラー30%",
+        "unlocked": false
+      }
+    ],
+    "tribe": "英"
+  },
+  {
+    "abilities": {
+      "kotowaza": null,
+      "leader": null,
+      "sugowaza": "未だ見ぬオシャ",
+      "trait1": [
+        "ウォールブレイカー",
+        "文字変換「し・じ」"
+      ],
+      "trait2": [
+        "フリーズブレイカー（福50で解放）",
+        "英種族キラー50%（福50以上）",
+        "援護(ブルーロック)",
+        "「ブルーロック」睡眠耐性10%"
+      ],
+      "waza": "オシャ降臨"
+    },
+    "acquired": false,
+    "attribute": "火",
+    "id": "bluelock1-aryu",
+    "name": "蟻生 十兵衛",
+    "notes": "コラボ降臨クエスト【魔級】。★6で獲得（進化なし）。火属性・英種族。コラボ期間は2026-12-07 15:59まで。能力はコトの木の加護適用後の値（加護で祝福とくせい「冥属性キラー30%」が追加）",
+    "releaseDate": "2026-11-24",
+    "source": "ブルーロックコラボ第1弾(復刻)",
+    "totsu": null,
+    "traits": [
+      {
+        "name": "木属性キラー30%",
+        "unlocked": false
+      },
+      {
+        "name": "冥属性キラー30%",
+        "unlocked": false
+      }
+    ],
+    "tribe": "英"
+  },
+  {
+    "abilities": {
+      "kotowaza": null,
+      "leader": null,
+      "sugowaza": "ロックオフ",
+      "trait1": [
+        "文字変換「し・じ」"
+      ],
+      "trait2": [
+        "ウォールブレイカー（福50で解放）",
+        "援護(ブルーロック)",
+        "「ブルーロック」睡眠耐性10%"
+      ],
+      "waza": "才能の原石共よ"
+    },
+    "acquired": false,
+    "attribute": "冥",
+    "id": "bluelock1-ego",
+    "name": "絵心 甚八",
+    "notes": "コラボクエスト【魔級・破滅級】クリアで獲得。★6（進化なし）。冥属性・英種族。破滅級は満福10体以上所持が挑戦条件。すごわざでトークンコトダマン「ブルーロックマン」を生成。コラボ期間は2026-12-07 15:59まで。能力はコトの木の加護適用後の値（加護で祝福とくせい「ドロー時英種族ATKUP小」が追加）",
+    "releaseDate": "2026-11-24",
+    "source": "ブルーロックコラボ第1弾(復刻)",
+    "totsu": null,
+    "traits": [
+      {
+        "name": "フリーズブレイカー",
+        "unlocked": false
+      },
+      {
+        "name": "コンボ+1",
+        "unlocked": false
+      },
+      {
+        "name": "ドロー時英種族ATKUP小",
+        "unlocked": false
+      }
+    ],
+    "tribe": "英"
+  },
+  {
+    "abilities": {
+      "kotowaza": null,
+      "leader": null,
       "sugowaza": "侵食(Mark.09)",
       "trait1": [
         "文字変換（福の上昇により追加）",
